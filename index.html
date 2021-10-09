@@ -17,9 +17,23 @@
 
         <div class="main-content">
             <div class="video-section">
+                <div class="mode-switcher">
+                    <button id="webcam-mode-btn" class="mode-btn active">📷 Webcam</button>
+                    <button id="image-mode-btn" class="mode-btn">🖼️ Upload Image</button>
+                </div>
+
                 <div class="video-container">
                     <video id="webcam" autoplay playsinline></video>
+                    <img id="uploaded-image" style="display: none; width: 100%; height: auto;">
                     <canvas id="canvas"></canvas>
+                    <div id="upload-zone" class="upload-zone" style="display: none;">
+                        <div class="upload-content">
+                            <span class="upload-icon">📁</span>
+                            <p>Drag & Drop an image here</p>
+                            <p class="upload-sub">or click to browse</p>
+                            <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
                     <div id="loading" class="loading">
                         <div class="spinner"></div>
                         <p>Loading AI Model...</p>
@@ -38,6 +52,10 @@
                     <button id="snapshot-btn" class="btn" disabled>
                         <span class="icon">📸</span>
                         Snapshot
+                    </button>
+                    <button id="detect-image-btn" class="btn primary" style="display: none;">
+                        <span class="icon">🔍</span>
+                        Detect Objects
                     </button>
                 </div>
 
@@ -61,6 +79,45 @@
                         <label>
                             <input type="checkbox" id="show-confidence" checked> Show Confidence
                         </label>
+                    </div>
+                </div>
+
+                <div class="object-filter">
+                    <h3>Object Filter</h3>
+                    <div class="filter-categories">
+                        <label><input type="checkbox" class="filter-check" value="person" checked> People</label>
+                        <label><input type="checkbox" class="filter-check" value="vehicle" checked> Vehicles</label>
+                        <label><input type="checkbox" class="filter-check" value="animal" checked> Animals</label>
+                        <label><input type="checkbox" class="filter-check" value="other" checked> Other</label>
+                    </div>
+                </div>
+
+                <div class="color-legend">
+                    <h3>Color Legend</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #FF6B6B;"></span>
+                            <span>People</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #4ECDC4;"></span>
+                            <span>Vehicles</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #45B7D1;"></span>
+                            <span>Animals</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #667eea;"></span>
+                            <span>Other</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detection-history">
+                    <h3>Detection History</h3>
+                    <div id="history-gallery" class="history-gallery">
+                        <p class="empty-state">No snapshots yet</p>
                     </div>
                 </div>
             </div>
@@ -89,6 +146,22 @@
                         <div class="stat-icon">⚡</div>
                         <div class="stat-value" id="avg-confidence">0%</div>
                         <div class="stat-label">Avg Confidence</div>
+                    </div>
+                </div>
+
+                <div class="performance-metrics">
+                    <h3>Performance Metrics</h3>
+                    <div class="metric-item">
+                        <span class="metric-label">Avg Detection Time:</span>
+                        <span class="metric-value" id="avg-detection-time">0ms</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Model Load Time:</span>
+                        <span class="metric-value" id="model-load-time">-</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Total Detections:</span>
+                        <span class="metric-value" id="total-detections">0</span>
                     </div>
                 </div>
 
