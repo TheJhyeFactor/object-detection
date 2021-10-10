@@ -358,6 +358,8 @@ function updatePerformanceMetrics() {
             stats.detectionTimes.reduce((a, b) => a + b, 0) / stats.detectionTimes.length
         );
         elements.avgDetectionTime.textContent = `${avgTime}ms`;
+    } else {
+        elements.avgDetectionTime.textContent = '0ms';
     }
     elements.totalDetectionsEl.textContent = stats.totalDetections;
 }
@@ -526,9 +528,21 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
-canvas = elements.canvas;
-ctx = canvas.getContext('2d');
-canvas.width = 640;
-canvas.height = 480;
+function initializeApp() {
+    canvas = elements.canvas;
+    ctx = canvas.getContext('2d');
+    canvas.width = 640;
+    canvas.height = 480;
 
-loadModel();
+    console.log('App initialized');
+    console.log('Filter settings:', settings.filters);
+    console.log('Performance elements:', {
+        avgDetectionTime: elements.avgDetectionTime,
+        modelLoadTime: elements.modelLoadTime,
+        totalDetections: elements.totalDetectionsEl
+    });
+
+    loadModel();
+}
+
+initializeApp();
