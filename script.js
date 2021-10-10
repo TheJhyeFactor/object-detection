@@ -54,6 +54,7 @@ const elements = {
     stopBtn: document.getElementById('stop-btn'),
     snapshotBtn: document.getElementById('snapshot-btn'),
     detectImageBtn: document.getElementById('detect-image-btn'),
+    saveImageBtn: document.getElementById('save-image-btn'),
     webcamModeBtn: document.getElementById('webcam-mode-btn'),
     imageModeBtn: document.getElementById('image-mode-btn'),
     threshold: document.getElementById('threshold'),
@@ -117,6 +118,9 @@ function switchMode(mode) {
         elements.stopBtn.style.display = 'flex';
         elements.snapshotBtn.style.display = 'flex';
         elements.detectImageBtn.style.display = 'none';
+        elements.saveImageBtn.style.display = 'none';
+        elements.detectImageBtn.disabled = true;
+        elements.saveImageBtn.disabled = true;
         stopDetection();
     } else {
         elements.webcamModeBtn.classList.remove('active');
@@ -128,8 +132,13 @@ function switchMode(mode) {
         elements.stopBtn.style.display = 'none';
         elements.snapshotBtn.style.display = 'none';
         elements.detectImageBtn.style.display = 'flex';
+        elements.saveImageBtn.style.display = 'flex';
+        elements.detectImageBtn.disabled = true;
+        elements.saveImageBtn.disabled = true;
         stopDetection();
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (ctx && canvas) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
     }
 }
 
@@ -171,6 +180,7 @@ async function detectOnImage() {
 
     drawPredictions(filteredPredictions);
     updateStats(filteredPredictions);
+    elements.saveImageBtn.disabled = false;
 }
 
 async function setupCamera() {
@@ -401,6 +411,37 @@ function takeSnapshot() {
     });
 }
 
+function saveImageResult() {
+    const snapshotCanvas = document.createElement('canvas');
+    snapshotCanvas.width = canvas.width;
+    snapshotCanvas.height = canvas.height;
+    const snapshotCtx = snapshotCanvas.getContext('2d');
+
+    snapshotCtx.drawImage(elements.uploadedImage, 0, 0);
+    snapshotCtx.drawImage(canvas, 0, 0);
+
+    snapshotCanvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+
+        detectionHistory.push({
+            url: url,
+            timestamp: Date.now()
+        });
+
+        if (detectionHistory.length > 12) {
+            URL.revokeObjectURL(detectionHistory[0].url);
+            detectionHistory.shift();
+        }
+
+        updateHistoryGallery();
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `detection-${Date.now()}.png`;
+        link.click();
+    });
+}
+
 function updateHistoryGallery() {
     if (detectionHistory.length === 0) {
         elements.historyGallery.innerHTML = '<p class="empty-state">No snapshots yet</p>';
@@ -417,7 +458,7 @@ function updateHistoryGallery() {
         .join('');
 }
 
-function deleteHistoryItem(index) {
+window.deleteHistoryItem = function(index) {
     URL.revokeObjectURL(detectionHistory[index].url);
     detectionHistory.splice(index, 1);
     updateHistoryGallery();
@@ -451,6 +492,7 @@ elements.uploadZone.addEventListener('drop', (e) => {
 });
 
 elements.detectImageBtn.addEventListener('click', detectOnImage);
+elements.saveImageBtn.addEventListener('click', saveImageResult);
 elements.startBtn.addEventListener('click', startDetection);
 elements.stopBtn.addEventListener('click', stopDetection);
 elements.snapshotBtn.addEventListener('click', takeSnapshot);
@@ -483,5 +525,10 @@ window.addEventListener('beforeunload', () => {
         stopDetection();
     }
 });
+
+canvas = elements.canvas;
+ctx = canvas.getContext('2d');
+canvas.width = 640;
+canvas.height = 480;
 
 loadModel();
